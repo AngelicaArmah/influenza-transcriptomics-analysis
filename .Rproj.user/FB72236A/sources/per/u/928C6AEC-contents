@@ -1,0 +1,66 @@
+# 0. ENVIRONMENT SETUP
+# Increase download timeout for large GEO files
+options(timeout = 3600)
+
+# Project root handling and reproducible file paths (here; Müller, 2025)
+library(here)
+
+# GEO database source (Edgar et al., 2002)
+# GEOquery R package for accessing GEO datasets (Davis & Meltzer, 2007)
+library(GEOquery)
+
+# Differential expression analysis using linear models with empirical Bayes moderation (limma; Ritchie et al., 2015)
+library(limma)
+
+# Data visualization using Grammar of Graphics (ggplot2; Wickham, 2016)
+library(ggplot2)
+
+# Prevent overlapping labels in ggplot2 visualizations (ggrepel; Slowikowski et al., 2026)
+library(ggrepel)
+
+# Data manipulation using tidy data grammar (dplyr; Wickham et al., 2026)
+library(dplyr)
+
+# Heatmap visualization (pheatmap; Kolde, 2025)
+library(pheatmap)
+
+# Human gene annotation database (org.Hs.eg.db; Carlson, 2025)
+library(org.Hs.eg.db)
+
+# Set seed for reproducibility of analysis
+set.seed(123)
+
+
+# 2. PROJECT PATH SETUP (reproducible structure)
+project_root <- here::here()
+base_dir <- file.path(project_root, "data")
+geo_dir <- file.path(base_dir, "GSE247401")
+stopifnot(dir.exists(project_root))
+
+
+if (!dir.exists(base_dir)) {
+  dir.create(base_dir, recursive = TRUE)
+}
+
+if (!dir.exists(geo_dir)) {
+  dir.create(geo_dir, recursive = TRUE)
+}
+
+# --------------------------------------------------------------------
+# 3. GEO DATA DOWNLOAD(conditional retrieval with validation check)
+# --------------------------------------------------------------------
+# List alll files in GEO directory (including subfolders) for inspection and downstream selection
+files <- list.files(geo_dir, recursive = TRUE, full.names = TRUE)
+
+data_files <- files[grepl("count|matrix|expression|\\.csv$|\\.txt$|\\.gz$",
+                          files,
+                          ignore.case = TRUE)]
+print(data_files)
+counts_files <- data_files[1]
+head(readLines(counts_files, n = 10))
+data <- read.csv(counts_files, row.names = 1)
+summary(data)
+all(data == floor(data), na.rm = TRUE)
+range(data, na.rm = TRUE)
+hist(as.matrix(data), breaks = 50)
+hist(log10(as.numeric(as.matrix(data)) +1), breaks = 100)

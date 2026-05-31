@@ -1,0 +1,37 @@
+#--------------------------
+# 3. GEO DATA DOWNLOAD
+#--------------------------
+# List existing files
+files <- list.files(geo_dir, recursive = TRUE, full.names = TRUE)
+
+# Identify likely data files (biologically meaningful filter)
+data_files <- files[grepl("count|counts|readcount|matrix", files, ignore.case = TRUE)]
+
+# Download only if no relevant data files are found
+if (length(data_files) == 0) {
+  message("Downloading GEO supplementary files...")
+  getGEOSuppFiles("GSE252713", baseDir = geo_dir)
+}
+  
+# Refresh after download
+files <- list.files(geo_dir, recursive = TRUE, full.names = TRUE)
+  
+data_files <- files[grepl("count|counts|readcount|matrix",
+                            files,
+                            ignore.case = TRUE)]
+
+# Show detected files
+print(data_files)
+
+# Select gene-level count file (robust pattern)
+count_file <- data_files[grepl("genes.*readcount", data_files, ignore.case = TRUE)]
+
+# Print selected file
+print(count_file)
+
+# Strict validation checks (clear error messages)
+if (length(count_file) == 0) stop("No gene count file found")
+if (length(count_file) > 1) stop("Multiple gene count files found")
+
+# Inspect file
+head(read.table(gzfile(count_file), sep = "\t", header = TRUE))
