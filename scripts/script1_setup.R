@@ -44,9 +44,6 @@ library(AnnotationDbi)
 # Define reproducible project root using here (Müller, 2025)
 project_root <- here::here()
 
-# Safety check to ensure project root is correctly detected before proceeding
-if (!dir.exists(project_root)) stop("Project root not found")
-
 # Define reproducible data directory within project structure
 base_dir <- file.path(project_root, "data")
 
@@ -65,4 +62,6 @@ if (!dir.exists(base_dir)) {
 # Create dataset-specific directory for isolated GEO data storage
 if (!dir.exists(geo_dir)) {
   dir.create(geo_dir, recursive = TRUE)
+}
   
+
